@@ -1,11 +1,9 @@
-# EasyPlugin
-EasyPlugin is an easy to use hombrew application for the PSVITA that installs taiHENkaku plugins from [VitaDB](https://vitadb.rinnegatamante.it/#/plugins).
+# EasyVPK
+EasyVPK is an easy to use hombrew application for the PSVITA that downloads vpks from [VitaDB](https://vitadb.rinnegatamante.it/#/plugins).
 
 ## "Planned features"
-- Ability to change the plugin database.
-- Touch controls
-- Installing Homebrew apps that come with plugins (for now they get copied to ux0:tai/VPKS/ so you can install them using VitaShell)
-- Display PSP icons
+- Downloading data files
+- Installing Homebrew apps that come with plugins (for now they get copied to ux0:VPKS/ so you can install them using VitaShell)
 
 ## Building
 
@@ -18,3 +16,7 @@ Compiling:
 cmake .
 make
 ```
+
+## Credits
+- [THEN00P](https://github.com/THEN00P) for creating EasyPlugin
+- [Rinnegatamante](https://github.com/Rinnegatamante) for helping with VitaDB and other shenanigans

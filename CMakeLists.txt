@@ -12,12 +12,12 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
     endif()
 endif()
 
-project(easyplugin)
+project(easyvpk)
 
 include("${VITASDK}/share/vita.cmake" REQUIRED)
 
-set(VITA_APP_NAME "EasyPlugin")
-set(VITA_TITLEID  "ESPL00009")
+set(VITA_APP_NAME "EasyVPK")
+set(VITA_TITLEID  "ESVPK0009")
 set(VITA_VERSION  "01.00")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-q -Wall -O3")
@@ -49,7 +49,7 @@ file(GLOB screens
     "src/screens/*.hpp"
 )
 
-add_executable(easyplugin
+add_executable(easyvpk
     ${minizip}
     ${vhbb}
     ${screens}
@@ -61,7 +61,7 @@ add_executable(easyplugin
     src/graphics/2dfont.cpp
 )
 
-target_link_libraries(easyplugin
+target_link_libraries(easyvpk
     vita2d
     sqlite
     ${CURL_LIBRARIES}
@@ -92,9 +92,9 @@ target_link_libraries(easyplugin
     SceLibKernel_stub
 )
 
-vita_create_self(easyplugin.self easyplugin UNSAFE)
+vita_create_self(easyvpk.self easyvpk UNSAFE)
 
-vita_create_vpk(easyplugin.vpk ${VITA_TITLEID} easyplugin.self
+vita_create_vpk(easyvpk.vpk ${VITA_TITLEID} easyvpk.self
   VERSION ${VITA_VERSION}
   NAME ${VITA_APP_NAME}
   FILE sce_sys/icon0.png sce_sys/icon0.png

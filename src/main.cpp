@@ -84,29 +84,25 @@ int main() {
     vita2d_init();
     initSceAppUtil();
 
-    Filesystem::mkDir("ux0:data/Easy_Plugins");
+    Filesystem::mkDir("ux0:data/Easy_VPK");
 
     vita2d_set_clear_color(RGBA8(255,255,255,255));
 
-    vita2d_texture *bgIMG = vita2d_load_PNG_file("ux0:app/ESPL00009/resources/bg.png");
+    vita2d_texture *bgIMG = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/bg.png");
     
     httpInit();
     netInit();
-    curlDownload("http://rinnegatamante.it/vitadb/list_plugins_json.php", "ux0:data/Easy_Plugins/plugins.json");
+    curlDownload("http://rinnegatamante.it/vitadb/list_hbs_json.php", "ux0:data/Easy_VPK/vpks.json");
 
     SharedData sharedData;
+	
+    Filesystem::mkDir(sharedData.vpkConfigPath);
 
-    if(doesDirExist("ux0:tai")) sharedData.taiConfigPath = "ux0:tai/";
-    else if(doesDirExist("ur0:tai")) sharedData.taiConfigPath = "ur0:tai/";
-    else return -1;
-
-    sharedData.taiConfig = Filesystem::readFile(sharedData.taiConfigPath+"config.txt");
-
-    sharedData.plugins = json::parse(Filesystem::readFile("ux0:data/Easy_Plugins/plugins.json"));
+    sharedData.vpks = json::parse(Filesystem::readFile("ux0:data/Easy_VPK/vpks.json"));
 
     getAppData(sharedData.appData);
 
-    sharedData.original = sharedData.plugins;
+    sharedData.original = sharedData.vpks;
 
     List listView;
     Popup popupView;
@@ -137,9 +133,9 @@ int main() {
         if(pad.buttons == SCE_CTRL_SELECT) {
             break;
         }
-        if(pad.buttons == SCE_CTRL_START && !sharedData.blockStart) {
+        /*if(pad.buttons == SCE_CTRL_START && !sharedData.blockStart) {
             if(sharedData.scene != 2) scePowerRequestColdReset();
-        }
+        }*/
     }
 
     httpTerm();

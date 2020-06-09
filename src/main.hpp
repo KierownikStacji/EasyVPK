@@ -32,10 +32,9 @@ struct SharedData {
     bool blockCircle = false;
     bool blockStart = false;
     bool initDetail = true;
-    string taiConfig = "";
-    string taiConfigPath = "";
+    string vpkConfigPath = "ux0:VPK/";
     vector<vita2d_texture *> screenshots;
-    json plugins;
+    json vpks;
     json original;
     vector<AppInfo> appData;
     vita2d_font *font = vita2d_load_font_mem(basicfont, basicfont_size);

@@ -23,11 +23,11 @@ void List::draw(SharedData &sharedData, unsigned int button) {
     if(updateImeDialog() == IME_DIALOG_RESULT_FINISHED) {
         searchResult = string((char *)getImeDialogInputTextUTF8());
 
-        if(searchResult == "" || searchResult == "*") sharedData.plugins = sharedData.original;
-        else sharedData.plugins = sortJson(searchResult, sharedData.original);
+        if(searchResult == "" || searchResult == "*") sharedData.vpks = sharedData.original;
+        else sharedData.vpks = sortJson(searchResult, sharedData.original);
     }
 
-    arrayLength = static_cast<int>(sharedData.plugins.size());
+    arrayLength = static_cast<int>(sharedData.vpks.size());
     scrollPercent = 504.0 / (arrayLength*85);   
     scrollThumbHeight = 504*scrollPercent;
 
@@ -52,8 +52,8 @@ void List::draw(SharedData &sharedData, unsigned int button) {
         if((i*85)-scrollY>544) break;
         if((i*85)+80-scrollY<0) continue;
 
-        vita2d_font_draw_textf(sharedData.font, 20, (i*85)+48-scrollY, RGBA8(255,255,255,255), 32, "%s", sharedData.plugins[i]["name"].get<string>().c_str());
-        vita2d_font_draw_textf(sharedData.font, 20, (i*85)+80-scrollY, RGBA8(255,255,255,255), 32, "%s", sharedData.plugins[i]["description"].get<string>().c_str());
+        vita2d_font_draw_textf(sharedData.font, 20, (i*85)+48-scrollY, RGBA8(255,255,255,255), 32, "%s %s", sharedData.vpks[i]["name"].get<string>().c_str(), sharedData.vpks[i]["version"].get<string>().c_str());
+        vita2d_font_draw_textf(sharedData.font, 20, (i*85)+80-scrollY, RGBA8(191,191,191,255), 28, "%s", sharedData.vpks[i]["description"].get<string>().c_str());
     }
 
     vita2d_draw_rectangle(10, (sharedData.cursorY*85)+14-scrollY, 940, 80, RGBA8(0,0,0,80));
@@ -69,7 +69,7 @@ void List::draw(SharedData &sharedData, unsigned int button) {
                 sharedData.blockCross = true;
                 sharedData.screenshots.clear();
 
-                if(sharedData.plugins[sharedData.cursorY]["screenshots"].get<string>() != "") {
+                if(sharedData.vpks[sharedData.cursorY]["screenshots"].get<string>() != "") {
                     if(!sharedData.screenshots.empty()) {
                         for(int i=0;i<sharedData.screenshots.size();i++) {
                             if(sharedData.screenshots[i])
@@ -79,14 +79,14 @@ void List::draw(SharedData &sharedData, unsigned int button) {
                         sharedData.screenshots.clear();
                     }
 
-                    subPaths = split(sharedData.plugins[sharedData.cursorY]["screenshots"].get<string>().c_str(), ';');
+                    subPaths = split(sharedData.vpks[sharedData.cursorY]["screenshots"].get<string>().c_str(), ';');
 
                     for(string subPath : subPaths) {
-                        Filesystem::mkDir("ux0:data/Easy_Plugins/screenshots");
-                        curlDownload((imageWebBase+subPath).c_str(), ("ux0:data/Easy_Plugins/"+subPath).c_str());
+                        Filesystem::mkDir("ux0:data/Easy_VPK/screenshots");
+                        curlDownload((imageWebBase+subPath).c_str(), ("ux0:data/Easy_VPK/"+subPath).c_str());
 
                         vita2d_texture *img;
-                        string img_file = ("ux0:data/Easy_Plugins/"+subPath);
+                        string img_file = ("ux0:data/Easy_VPK/"+subPath);
 
                         img = vita2d_load_PNG_file(img_file.c_str());
 
@@ -107,7 +107,7 @@ void List::draw(SharedData &sharedData, unsigned int button) {
                 sharedData.scene = 1;
                 break;
             case SCE_CTRL_TRIANGLE:
-                initImeDialog("Search for a plugin", "", 28);
+                initImeDialog("Search for an application", "", 28);
 
                 sharedData.cursorY = 0;
                 break;

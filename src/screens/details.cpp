@@ -3,14 +3,14 @@
 
 #include "details.hpp"
 
-#define maxImageHeight 305
+#define maxImageHeight 272
 
 void Details::draw(SharedData &sharedData, unsigned int button) {
     if(sharedData.initDetail) {
         cycleCounter = 0;
         imageCycles = 0;
         
-        longDescription = formatLongDesc(sharedData.plugins[sharedData.cursorY]["long_description"].get<string>(), sharedData.font, 920, 32);
+        longDescription = formatLongDesc(sharedData.vpks[sharedData.cursorY]["long_description"].get<string>(), sharedData.font, 920, 32);
 
         sharedData.initDetail = false;
     }
@@ -28,13 +28,15 @@ void Details::draw(SharedData &sharedData, unsigned int button) {
             
             float size = (float) maxImageHeight / height;
 
-            vita2d_draw_texture_scale(sharedData.screenshots[imageCycles], 410, 10, size, size);
+            vita2d_draw_texture_scale(sharedData.screenshots[imageCycles], 470, 10, size, size);
         }
     }
 
-    vita2d_font_draw_textf(sharedData.font, 20, 45, RGBA8(255,255,255,255), 35, "%s", (sharedData.plugins[sharedData.cursorY]["name"].get<string>() + " " + sharedData.plugins[sharedData.cursorY]["version"].get<string>()).c_str());
+    vita2d_font_draw_textf(sharedData.font, 20, 45, RGBA8(255,255,255,255), 40, "%s %s", sharedData.vpks[sharedData.cursorY]["name"].get<string>().c_str(), sharedData.vpks[sharedData.cursorY]["version"].get<string>().c_str());
+    vita2d_font_draw_textf(sharedData.font, 20, 90, RGBA8(215,215,215,255), 20, "by %s", sharedData.vpks[sharedData.cursorY]["author"].get<string>().c_str());
+    //vita2d_font_draw_textf(sharedData.font, 20, 150, RGBA8(255,255,255,255), 17, "%s", sharedData.vpks[sharedData.cursorY]["data"].get<string>().c_str());
     
-    vita2d_font_draw_textf(sharedData.font, 20, 350, RGBA8(255,255,255,255), 32, "%s", longDescription.c_str());
+    vita2d_font_draw_textf(sharedData.font, 20, 317, RGBA8(255,255,255,255), 30, "%s", longDescription.c_str());
 
     vita2d_draw_texture(desc1, 0, 504);
 
