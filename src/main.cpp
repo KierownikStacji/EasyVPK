@@ -96,7 +96,7 @@ int main() {
 
     SharedData sharedData;
 	
-    Filesystem::mkDir(sharedData.vpkConfigPath);
+    Filesystem::mkDir(sharedData.vpkDownloadPath);
 
     sharedData.vpks = json::parse(Filesystem::readFile("ux0:data/Easy_VPK/vpks.json"));
 
@@ -115,41 +115,39 @@ int main() {
 
         vita2d_draw_texture(bgIMG, 0, 0);
 
-        if(pad.buttons != SCE_CTRL_CROSS) sharedData.blockCross = false;
-        if(pad.buttons != SCE_CTRL_CIRCLE) sharedData.blockCircle = false;
-        if(pad.buttons != SCE_CTRL_START) sharedData.blockStart = false;
+        if (pad.buttons != SCE_CTRL_CROSS) sharedData.blockCross = false;
+        if (pad.buttons != SCE_CTRL_SQUARE) sharedData.blockSquare = false;
+        if (pad.buttons != SCE_CTRL_CIRCLE) sharedData.blockCircle = false;
+        if (pad.buttons != SCE_CTRL_START) sharedData.blockStart = false;
         
-        if(sharedData.scene == 0) listView.draw(sharedData, pad.buttons);
+        if (sharedData.scene == 0) listView.draw(sharedData, pad.buttons);
         
-        if(sharedData.scene == 1) detailsView.draw(sharedData, pad.buttons);
+        if (sharedData.scene == 1) detailsView.draw(sharedData, pad.buttons);
 
-        if(sharedData.scene == 2) popupView.draw(sharedData, pad.buttons);
+        if (sharedData.scene == 2) popupView.draw(sharedData);
 
         vita2d_end_drawing();
         vita2d_common_dialog_update();
         vita2d_swap_buffers();
         sceDisplayWaitVblankStart();
 
-        if(pad.buttons == SCE_CTRL_SELECT) {
+        if (pad.buttons == SCE_CTRL_SELECT)
             break;
-        }
-        /*if(pad.buttons == SCE_CTRL_START && !sharedData.blockStart) {
-            if(sharedData.scene != 2) scePowerRequestColdReset();
-        }*/
     }
 
     httpTerm();
     netTerm();
     vita2d_free_font(sharedData.font);
     vita2d_free_texture(bgIMG);
-    for(int i=0; i<sharedData.appData.size();i++) {
-        if(sharedData.appData[i].icon != NULL)
-        vita2d_free_texture(sharedData.appData[i].icon);
-    }
-    for(int i=0;i<sharedData.screenshots.size();i++) {
-        if(sharedData.screenshots[i] != NULL)
-        vita2d_free_texture(sharedData.screenshots[i]);
-    }
+	
+    for (int i=0; i<sharedData.appData.size();i++)
+        if (sharedData.appData[i].icon != NULL)
+			vita2d_free_texture(sharedData.appData[i].icon);
+
+    for (int i=0;i<sharedData.screenshots.size();i++)
+        if (sharedData.screenshots[i] != NULL)
+			vita2d_free_texture(sharedData.screenshots[i]);
+
     listView.free();
     detailsView.free();
     popupView.free();

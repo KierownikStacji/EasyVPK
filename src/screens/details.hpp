@@ -14,4 +14,5 @@ class Details {
         int imageCycles = 0;
         int cycleCounter = 0;
         vita2d_texture *desc1 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/desc1.png");
+        vita2d_texture *desc5 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/desc5.png");
 };

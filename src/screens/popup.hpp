@@ -9,25 +9,12 @@
 
 class Popup {
     public:
-        void draw(SharedData &sharedData, unsigned int button);
+        void draw(SharedData &sharedData);
+		void reset();
         void free();
 
     private:
-        int selected = 0;
-        int scrollY = 0;
-        int scrollDelay = 0;
-        int scrollStage = 0;
-        vector<int> selectedApps;
-        SceIoDirent dirStruct;
-        bool tai = true;
-        bool archive = false;
-        int currentPlugin = 0;
-        int dir;
-        int state = 0;
-        int scrollThumbHeight = 0;
-        double scrollPercent = 0;
-        string vpkPath;
-        string vpkName = "";
+		string getDataFileName(const string& s);
         vector<string> installFiles;
         vita2d_texture *desc = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/desc2.png");
         vita2d_texture *desc2 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/desc3.png");

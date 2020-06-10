@@ -18,10 +18,10 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "EasyVPK")
 set(VITA_TITLEID  "ESVPK0009")
-set(VITA_VERSION  "01.00")
+set(VITA_VERSION  "01.10")
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-q -Wall -O3")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-q -Wall -O2")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -fpermissive")
 
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=7")
 
@@ -33,15 +33,9 @@ link_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
 
-file(GLOB vhbb
-    "src/utils/vhbb/*.cpp"
-    "src/utils/vhbb/*.c"
-    "src/utils/vhbb/*.h"
-)
-
 file(GLOB minizip
-    "src/utils/vhbb/minizip/*.c"
-    "src/utils/vhbb/minizip/*.h"
+    "src/utils/minizip/*.c"
+    "src/utils/minizip/*.h"
 )
 
 file(GLOB screens
@@ -51,7 +45,6 @@ file(GLOB screens
 
 add_executable(easyvpk
     ${minizip}
-    ${vhbb}
     ${screens}
     src/main.cpp
     src/net/download.cpp
@@ -72,6 +65,7 @@ target_link_libraries(easyvpk
     z
     m
     c
+	ScePgf_stub 
     SceGxm_stub
     SceSqlite_stub 
     SceCtrl_stub
@@ -107,4 +101,5 @@ vita_create_vpk(easyvpk.vpk ${VITA_TITLEID} easyvpk.self
   FILE src/graphics/desc2.png resources/desc2.png
   FILE src/graphics/desc3.png resources/desc3.png
   FILE src/graphics/desc4.png resources/desc4.png
+  FILE src/graphics/desc5.png resources/desc5.png
 )
