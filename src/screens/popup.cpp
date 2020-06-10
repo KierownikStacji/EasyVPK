@@ -204,8 +204,7 @@ static int downloader_main(unsigned int args, void* arg) {
 
 		vita2d_pgf_draw_text(pgf, 20, 30, RGBA8(255,255,0,255), 1.0f, "EasyVPK downloader");
 		vita2d_pgf_draw_text(pgf, 20, 514, RGBA8(255,255,0,255), 1.0f, "based on vitaQuakeIII downloader by Rinnegatamante");
-		vita2d_pgf_draw_textf(pgf, 20, 80, RGBA8(109,0,252,255), 1.0f,  "d_url =  %s", d_url.c_str());
-		vita2d_pgf_draw_textf(pgf, 20, 100, RGBA8(109,0,252,255), 1.0f, "Downloading %s", d_filename.c_str());
+		vita2d_pgf_draw_textf(pgf, 20, 80, RGBA8(109,0,252,255), 1.0f, "Downloading %s", d_filename.c_str());
 	
 		// Starting the download
 		launchDownload(d_url.c_str());
