@@ -47,6 +47,8 @@ void Details::draw(SharedData &sharedData, unsigned int button) {
     if (sharedData.scene == 1) {
         switch (button) {
             case SCE_CTRL_CIRCLE:
+			    if (sharedData.blockCircle)
+					break;
                 sharedData.scene = 0;
 
                 break;
@@ -59,6 +61,7 @@ void Details::draw(SharedData &sharedData, unsigned int button) {
                 
                 sharedData.blockCross = true;
                 sharedData.blockSquare = true;
+                sharedData.blockCircle = true;
                 break;
 			case SCE_CTRL_SQUARE:
 			    if (sharedData.blockSquare)
@@ -69,6 +72,7 @@ void Details::draw(SharedData &sharedData, unsigned int button) {
                 
                 sharedData.blockSquare = true;
                 sharedData.blockCross = true;
+				sharedData.blockCircle = true;
                 break;
         }
     }

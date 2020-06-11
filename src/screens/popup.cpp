@@ -19,6 +19,8 @@
 #include "../utils/minizip/unzip.h"
 #include "popup.hpp"
 
+#include "../utils/vitaPackage.h"
+
 
 #define VPK			0
 #define DATA		1
@@ -192,26 +194,42 @@ static int downloader_main(unsigned int args, void* arg) {
 	else sceAppMgrGetDevInfo("ux0:", &dummy, &free_storage);
 	free(dev_name);
 	
+	int install_state = 0;
+	
 	for (;;) {
 		
 		sceCtrlPeekBufferPositive(0, &pad, 1);
 
-		if ((pad.buttons & SCE_CTRL_CROSS) && (state >= FINISHED))
+		if ((pad.buttons & SCE_CTRL_CROSS) && (state >= FINISHED)) {
+			if (dl_type == VPK && !install_state) {
+				VitaPackage pkg = VitaPackage(std::string(dl_dir + d_filename));
+				install_state = pkg.Install();
+			}
+		}
+		
+		if ((pad.buttons & SCE_CTRL_CIRCLE) && (state >= FINISHED))
 			break;
 
 		vita2d_start_drawing();
 		vita2d_clear_screen();
 
-		vita2d_pgf_draw_text(pgf, 20, 30, RGBA8(255,255,0,255), 1.0f, "EasyVPK downloader");
-		vita2d_pgf_draw_text(pgf, 20, 514, RGBA8(255,255,0,255), 1.0f, "based on vitaQuakeIII downloader by Rinnegatamante");
-		vita2d_pgf_draw_textf(pgf, 20, 80, RGBA8(109,0,252,255), 1.0f, "Downloading %s", d_filename.c_str());
+		vita2d_pgf_draw_text(pgf,  20,  30, RGBA8(255,255,0,255), 1.0f, "EasyVPK downloader");
+		vita2d_pgf_draw_text(pgf,  20, 514, RGBA8(255,255,0,255), 1.0f, "based on vitaQuakeIII downloader by Rinnegatamante");
+		vita2d_pgf_draw_textf(pgf, 20,  80, RGBA8(109,0,252,255), 1.0f, "Downloading %s", d_filename.c_str());
 	
 		// Starting the download
 		launchDownload(d_url.c_str());
 		
 		if (state > DOWNLOADING) {
-			if (state >= FINISHED) vita2d_pgf_draw_textf(pgf, 20, 400, RGBA8(255,255,255,255), 1.0f, "Press X to exit.");
-			if (state < MISSING) vita2d_pgf_draw_textf(pgf, 20, 200, RGBA8(0,255,0,255), 1.0f, "Pack downloaded successfully! (%.2f %s)", format(downloaded_bytes), sizes[quota(downloaded_bytes)]);
+			//if (state >= FINISHED) vita2d_pgf_draw_textf(pgf, 20, 400, RGBA8(255,255,255,255), 1.0f, "Press X to exit.");
+			if (state >= FINISHED) {
+				if (install_state) 	vita2d_pgf_draw_textf(pgf, 20, 400, RGBA8(255,255,255,255), 1.0f, "Finished!\nPress O to exit.");
+				else				vita2d_pgf_draw_textf(pgf, 20, 400, RGBA8(255,255,255,255), 1.0f, "Press X to install. (May take several minutes)\nPress O to Exit");
+			}
+			
+			if (state < MISSING)
+				vita2d_pgf_draw_textf(pgf, 20, 200, RGBA8(0,255,0,255), 1.0f, "Pack downloaded successfully! (%.2f %s)", format(downloaded_bytes), sizes[quota(downloaded_bytes)]);
+			
 			if (state < FINISHED) {
 				vita2d_pgf_draw_text(pgf, 20, 220, RGBA8(255,255,255,255), 1.0f, "Extracting pack, please wait!");
 				vita2d_pgf_draw_textf(pgf, 20, 300, RGBA8(255,255,255,255), 1.0f, "File: %lu / %lu", zip_idx, zip_total);
