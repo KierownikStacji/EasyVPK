@@ -18,10 +18,11 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "EasyVPK")
 set(VITA_TITLEID  "ESVPK0009")
-set(VITA_VERSION  "01.11")
+set(VITA_VERSION  "01.20")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-q -Wall -O2")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -fpermissive")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -std=c++17 -fpermissive")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g -fpermissive")
 
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=7")
 
@@ -32,6 +33,31 @@ find_package(OpenSSL REQUIRED)
 link_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
 )
+
+FUNCTION(ADD_RESOURCES out_var)
+    SET(result)
+    FOREACH (in_f ${ARGN})
+        SET(out_f "${CMAKE_CURRENT_BINARY_DIR}/${in_f}.o")
+        GET_FILENAME_COMPONENT(out_dir ${out_f} DIRECTORY)
+        ADD_CUSTOM_COMMAND(OUTPUT ${out_f}
+                COMMAND ${CMAKE_COMMAND} -E make_directory ${out_dir}
+                COMMAND ${CMAKE_LINKER} -r -b binary -o ${out_f} ${in_f}
+                DEPENDS ${in_f}
+                WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+                COMMENT "Building resource ${out_f}"
+                VERBATIM
+                )
+        LIST(APPEND result ${out_f})
+    ENDFOREACH ()
+    SET(${out_var} "${result}" PARENT_SCOPE)
+ENDFUNCTION()
+
+set(RELEASE_DIR ${CMAKE_SOURCE_DIR}/release)
+file(GLOB_RECURSE res_files RELATIVE ${CMAKE_SOURCE_DIR}
+        assets/head.bin
+)
+
+add_resources(PROJECT_RESOURCES ${res_files})
 
 file(GLOB minizip
     "src/utils/minizip/*.c"
@@ -46,11 +72,15 @@ file(GLOB screens
 add_executable(easyvpk
     ${minizip}
     ${screens}
+	${PROJECT_RESOURCES}
     src/main.cpp
     src/net/download.cpp
     src/utils/filesystem.cpp
     src/utils/search.cpp
     src/utils/format.cpp
+    src/utils/vitaPackage.cpp
+    src/utils/zip.cpp
+    src/utils/sha1.c
     src/graphics/2dfont.cpp
 )
 
