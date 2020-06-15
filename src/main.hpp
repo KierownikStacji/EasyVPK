@@ -28,11 +28,10 @@ class AppInfo {
 struct SharedData {
     int scene = 0;
     int cursorY = 0;
-    bool blockCross = false;
+    bool blockCross  = false;
     bool blockSquare = false;
     bool blockCircle = false;
-    bool blockStart = false;
-    bool initDetail = true;
+    bool initDetail  = true;
 	int dl_type_sd = 0; // VPK
     string vpkDownloadPath = "ux0:VPK/";
     vector<vita2d_texture *> screenshots;

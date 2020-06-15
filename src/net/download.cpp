@@ -70,6 +70,7 @@ void curlDownload(const char *url, const char *dest) {
 	if(curl) {
 		curl_easy_reset(curl);
 		curl_easy_setopt(curl, CURLOPT_URL, url);
+		curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
 		curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 		curl_easy_setopt(curl, CURLOPT_NOPROGRESS, 1L);
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
@@ -86,7 +87,7 @@ void curlDownload(const char *url, const char *dest) {
 }
 
 std::string curlDownloadKeepName(char const*const url, std::string dst) {
-    CURL        *curl;
+    CURL *curl;
 
     SceUID file = sceIoOpen("ux0:data/Easy_VPK/plugin.tmp", SCE_O_CREAT | SCE_O_WRONLY, 0777);
     SceUID head = sceIoOpen("ux0:data/Easy_VPK/head.tmp", SCE_O_CREAT | SCE_O_WRONLY, 0777);
@@ -115,18 +116,15 @@ std::string curlDownloadKeepName(char const*const url, std::string dst) {
 
     std::string header = Filesystem::readFile("ux0:data/Easy_VPK/head.tmp");
 
-	if(header.find("filename=\"") != string::npos) {
+	if (header.find("filename=\"") != string::npos) {
 		header = header.substr(header.find("filename=\"")+10);
-
 		header = header.substr(0, header.find("\""));
-	}
-	else if (header.find("location: ") != string::npos) {
+	} else if (header.find("location: ") != string::npos) {
 		header = header.substr(header.find("location: ")+10);
 		header = header.substr(0, header.find("\n")-1);
 
-		while(header.find("/") != string::npos) {
+		while (header.find("/") != string::npos)
 			header = header.substr(header.find("/")+1);
-		}
 	}
 
     Filesystem::copyFile("ux0:data/Easy_VPK/plugin.tmp", dst+header);

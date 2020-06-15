@@ -15,18 +15,7 @@
 #include <psp2/promoterutil.h>
 #include <psp2/sysmodule.h>
 
-#define VHBB_DATA "ux0:/data/VitaHbBrowser"
-#define VHBB_RESOURCES "ux0:/app/ESVPK0009/resources"
-
-
 #define ntohl __builtin_bswap32
-
-#define UPDATER_SRC_EBOOT_PATH VHBB_RESOURCES "/updater/eboot.bin"
-#define UPDATER_SRC_SFO_PATH VHBB_RESOURCES "/updater/param.sfo"
-
-#define UPDATER_DST_EBOOT_PATH PACKAGE_TEMP_FOLDER "eboot.bin"
-#define UPDATER_DST_SFO_DIR PACKAGE_TEMP_FOLDER "sce_sys/"
-#define UPDATER_DST_SFO_PATH PACKAGE_TEMP_FOLDER "sce_sys/param.sfo"
 
 extern unsigned char _binary_assets_head_bin_start;
 extern unsigned char _binary_assets_head_bin_size;

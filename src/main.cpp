@@ -34,8 +34,8 @@ static int callback(void *data, int argc, char **argv, char **column_name) {
 	return 0;
 }
 
-void initSceAppUtil()
-{
+void initSceAppUtil() {
+
 	// Init SceAppUtil
 	SceAppUtilInitParam init_param;
 	SceAppUtilBootParam boot_param;
@@ -65,9 +65,8 @@ int getAppData(vector<AppInfo> &ret) {
     sqlite3_rw_init();
 
     int rc = sqlite3_open_v2("ur0:shell/db/app.db", &db, SQLITE_OPEN_READONLY, NULL);
-    if(rc != SQLITE_OK) {
+    if (rc != SQLITE_OK)
         return -1;
-    }
 
     sqlite3_exec(db, "SELECT titleId, title, iconPath FROM tbl_appinfo_icon WHERE NOT titleId=\"NULL\" ORDER BY title ASC", callback, &ret, NULL);
 
@@ -92,7 +91,7 @@ int main() {
     
     httpInit();
     netInit();
-    curlDownload("http://rinnegatamante.it/vitadb/list_hbs_json.php", "ux0:data/Easy_VPK/vpks.json");
+    curlDownload("https://vitadb.rinnegatamante.it/list_hbs_json.json", "ux0:data/Easy_VPK/vpks.json");
 
     SharedData sharedData;
 	
@@ -115,10 +114,10 @@ int main() {
 
         vita2d_draw_texture(bgIMG, 0, 0);
 
-        if (pad.buttons != SCE_CTRL_CROSS) sharedData.blockCross = false;
+        if (pad.buttons != SCE_CTRL_CROSS ) sharedData.blockCross = false;
         if (pad.buttons != SCE_CTRL_SQUARE) sharedData.blockSquare = false;
         if (pad.buttons != SCE_CTRL_CIRCLE) sharedData.blockCircle = false;
-        if (pad.buttons != SCE_CTRL_START) sharedData.blockStart = false;
+        
         
         if (sharedData.scene == 0) listView.draw(sharedData, pad.buttons);
         
@@ -140,11 +139,11 @@ int main() {
     vita2d_free_font(sharedData.font);
     vita2d_free_texture(bgIMG);
 	
-    for (int i=0; i<sharedData.appData.size();i++)
+    for (int i = 0; i < sharedData.appData.size(); i++)
         if (sharedData.appData[i].icon != NULL)
 			vita2d_free_texture(sharedData.appData[i].icon);
 
-    for (int i=0;i<sharedData.screenshots.size();i++)
+    for (int i = 0; i < sharedData.screenshots.size(); i++)
         if (sharedData.screenshots[i] != NULL)
 			vita2d_free_texture(sharedData.screenshots[i]);
 
