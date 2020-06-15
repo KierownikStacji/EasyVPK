@@ -92,7 +92,7 @@ int main() {
     
     httpInit();
     netInit();
-    curlDownload("http://rinnegatamante.it/vitadb/list_hbs_json.php", "ux0:data/Easy_VPK/vpks.json");
+    curlDownload("https://raw.githubusercontent.com/Electric1447/VHBB-Android/master/db/vitadb_hbs_20200615.json", "ux0:data/Easy_VPK/vpks.json");
 
     SharedData sharedData;
 	
