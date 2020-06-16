@@ -19,3 +19,4 @@ make
 ## Credits
 - [THEN00P](https://github.com/THEN00P) for creating EasyPlugin
 - [Rinnegatamante](https://github.com/Rinnegatamante) for helping with VitaDB and other shenanigans
+- [devnoname120](https://github.com/devnoname120) for creating [vhbb](https://github.com/devnoname120/vhbb).
