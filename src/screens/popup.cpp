@@ -225,7 +225,7 @@ static int downloader_main(unsigned int args, void* arg) {
 		
 		if (state > DOWNLOADING) {
 			if (state >= FINISHED)
-				vita2d_pgf_draw_text(pgf, 20, 400, WHITE, 1.0f, install_state ? "Finished!\nPress O to exit." : "Press X to install. (May take several minutes)\nPress O to Exit");
+				vita2d_pgf_draw_textf(pgf, 20, 400, WHITE, 1.0f, "%s\nPress O to exit.", install_state ? "Finished!" : "Press X to install. (May take several minutes)");
 			
 			if (state < MISSING)
 				vita2d_pgf_draw_textf(pgf, 20, 200, GREEN, 1.0f, "Files downloaded successfully! (%.2f %s)", format(downloaded_bytes), sizes[quota(downloaded_bytes)]);
