@@ -1,14 +1,26 @@
 #pragma once
 
-#include <vita2d.h>
-#include <psp2/kernel/clib.h>
 #include <psp2/ctrl.h>
 #include <psp2/kernel/clib.h>
 #include <psp2/sysmodule.h>
+#include <vita2d.h>
 
 #include "utils/json.hpp"
 
-#define imageWebBase "http://rinnegatamante.it/vitadb/"
+
+#define PARENT_URL "http://rinnegatamante.it/vitadb/"
+#define HOMEBREW_URL PARENT_URL "list_hbs_json.json"
+
+#define BLACK   RGBA8(  0,   0,   0, 255)
+#define WHITE   RGBA8(255, 255, 255, 255)
+#define LGREY   RGBA8(191, 191, 191, 255)
+#define LGREY2 	RGBA8(215, 215, 215, 255)
+#define RED     RGBA8(255,   0,   0, 255)
+#define GREEN   RGBA8(  0, 255,   0, 255)
+#define BLUE   	RGBA8(  0,   0, 255, 255)
+#define YELLOW 	RGBA8(255, 255,   0, 255)
+#define PURPLE  RGBA8(109,   0, 252, 255)
+
 
 using namespace std;
 
@@ -16,14 +28,6 @@ using json = nlohmann::json;
 
 extern unsigned int basicfont_size;
 extern unsigned char basicfont[];
-
-class AppInfo {
-    public:
-        AppInfo(string p_appID, string p_title, string fileLocation);
-        string appID;
-        string title;
-        vita2d_texture *icon;
-};
 
 struct SharedData {
     int scene = 0;
@@ -37,6 +41,5 @@ struct SharedData {
     vector<vita2d_texture *> screenshots;
     json vpks;
     json original;
-    vector<AppInfo> appData;
     vita2d_font *font = vita2d_load_font_mem(basicfont, basicfont_size);
 };

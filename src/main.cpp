@@ -1,38 +1,20 @@
-#include <vita2d.h>
+#include "main.hpp"
+
 #include <psp2/kernel/processmgr.h>
-#include <psp2/power.h> 
 #include <psp2/io/fcntl.h>
-#include <psp2/sqlite.h>
 #include <psp2/apputil.h>
 #include <psp2/display.h>
 #include <psp2/ime_dialog.h>
-#include <string>
 
-#include "main.hpp"
-#include "sqlite3.h"
 #include "net/download.hpp"
 #include "utils/filesystem.hpp"
 #include "utils/search.hpp"
-#include "utils/format.hpp"
 
 #include "screens/list.hpp"
 #include "screens/details.hpp"
 #include "screens/popup.hpp"
 
 SceCtrlData pad;
-
-AppInfo::AppInfo(string p_appID, string p_title, string fileLocation) {
-    appID = p_appID;
-    title = p_title;
-    icon = fileLocation.find(".dds") == string::npos ? vita2d_load_PNG_file(fileLocation.c_str()) : NULL;
-}
-
-static int callback(void *data, int argc, char **argv, char **column_name) {
-    vector<AppInfo> *ret = (vector<AppInfo>*) data;
-
-	ret->emplace_back(string(argv[0]), string(argv[1]), string(argv[2]));
-	return 0;
-}
 
 void initSceAppUtil() {
 
@@ -51,56 +33,25 @@ void initSceAppUtil() {
 	sceCommonDialogSetConfigParam(&config);
 }
 
-int getAppData(vector<AppInfo> &ret) {
-    SceIoDirent dirInfo;
-    SceUID folder;
-
-	ret.emplace_back("ALL", "All", "");
-	ret.emplace_back("main", "Livearea (main)", "");
-
-    sqlite3 *db = NULL;
-
-    sceSysmoduleLoadModule(SCE_SYSMODULE_SQLITE);
-
-    sqlite3_rw_init();
-
-    int rc = sqlite3_open_v2("ur0:shell/db/app.db", &db, SQLITE_OPEN_READONLY, NULL);
-    if (rc != SQLITE_OK)
-        return -1;
-
-    sqlite3_exec(db, "SELECT titleId, title, iconPath FROM tbl_appinfo_icon WHERE NOT titleId=\"NULL\" ORDER BY title ASC", callback, &ret, NULL);
-
-	if (db != NULL)
-		sqlite3_close(db);
-	sqlite3_rw_exit();
-
-    sceSysmoduleUnloadModule(SCE_SYSMODULE_SQLITE);
-
-    return 0;
-}
-
 int main() {
     vita2d_init();
     initSceAppUtil();
 
     Filesystem::mkDir("ux0:data/Easy_VPK");
 
-    vita2d_set_clear_color(RGBA8(255,255,255,255));
-
-    vita2d_texture *bgIMG = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/bg.png");
+    vita2d_set_clear_color(WHITE);
+	
+	vita2d_texture *bgIMG = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/bg.png");
     
     httpInit();
     netInit();
-    curlDownload("https://vitadb.rinnegatamante.it/list_hbs_json.json", "ux0:data/Easy_VPK/vpks.json");
+    curlDownload(HOMEBREW_URL, "ux0:data/Easy_VPK/vpks.json");
 
     SharedData sharedData;
 	
     Filesystem::mkDir(sharedData.vpkDownloadPath);
 
     sharedData.vpks = json::parse(Filesystem::readFile("ux0:data/Easy_VPK/vpks.json"));
-
-    getAppData(sharedData.appData);
-
     sharedData.original = sharedData.vpks;
 
     List listView;
@@ -117,12 +68,9 @@ int main() {
         if (pad.buttons != SCE_CTRL_CROSS ) sharedData.blockCross = false;
         if (pad.buttons != SCE_CTRL_SQUARE) sharedData.blockSquare = false;
         if (pad.buttons != SCE_CTRL_CIRCLE) sharedData.blockCircle = false;
-        
-        
+		
         if (sharedData.scene == 0) listView.draw(sharedData, pad.buttons);
-        
         if (sharedData.scene == 1) detailsView.draw(sharedData, pad.buttons);
-
         if (sharedData.scene == 2) popupView.draw(sharedData);
 
         vita2d_end_drawing();
@@ -138,10 +86,6 @@ int main() {
     netTerm();
     vita2d_free_font(sharedData.font);
     vita2d_free_texture(bgIMG);
-	
-    for (int i = 0; i < sharedData.appData.size(); i++)
-        if (sharedData.appData[i].icon != NULL)
-			vita2d_free_texture(sharedData.appData[i].icon);
 
     for (int i = 0; i < sharedData.screenshots.size(); i++)
         if (sharedData.screenshots[i] != NULL)
@@ -149,7 +93,6 @@ int main() {
 
     listView.free();
     detailsView.free();
-    popupView.free();
     vita2d_fini();
     
     sceKernelExitProcess(0);

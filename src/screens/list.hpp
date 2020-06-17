@@ -1,6 +1,5 @@
-#pragma once
-
 #include <vita2d.h>
+
 #include "../main.hpp"
 
 class List {
@@ -18,5 +17,5 @@ class List {
         int scrollStage = 0;
         vector<string> subPaths;
         string searchResult = "";
-        vita2d_texture *desc = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/desc.png");
+        vita2d_texture *navbar0 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/navbar0.png");
 };

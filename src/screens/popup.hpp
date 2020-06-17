@@ -1,22 +1,30 @@
-#pragma once
-
-#include <psp2/io/dirent.h>
 #include <vector>
 
-#include "../utils/filesystem.hpp"
-
 #include "../main.hpp"
+
+
+#define NET_INIT_SIZE 1*1024*1024
+#define CHUNK_MAXSIZE 32*1024*1024
+
+
+#define VPK			0
+#define DATA		1
+
+#define IDLE        0
+#define DOWNLOADING 1
+#define DOWNLOADED  2
+#define EXTRACTING  3
+#define FINISHED    4
+#define MISSING     5
+#define ERROR       6
+
 
 class Popup {
     public:
         void draw(SharedData &sharedData);
 		void reset();
-        void free();
 
     private:
 		string getDataFileName(const string& s);
         vector<string> installFiles;
-        vita2d_texture *desc = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/desc2.png");
-        vita2d_texture *desc2 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/desc3.png");
-        vita2d_texture *desc3 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/desc4.png");
 };

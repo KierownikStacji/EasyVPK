@@ -4,46 +4,31 @@
 
 #define _GNU_SOURCE char *strcasestr(const char *haystack, const char *needle);
 
+#include "popup.hpp"
+
 #include <iostream>
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
-#include <psp2/io/dirent.h>
-#include <psp2/io/stat.h>
+
 #include <vitasdk.h>
 #include <vita2d.h>
 #include <curl/curl.h>
 
-#include "../main.hpp"
 #include "../utils/minizip/unzip.h"
-#include "popup.hpp"
-
 #include "../utils/vitaPackage.h"
+#include "../utils/filesystem.hpp"
 
-
-#define VPK			0
-#define DATA		1
-
-#define IDLE        0
-#define DOWNLOADING 1
-#define DOWNLOADED  2
-#define EXTRACTING  3
-#define FINISHED    4
-#define MISSING     5
-#define ERROR       6
 
 int state = IDLE;
-
-#define NET_INIT_SIZE 1*1024*1024
-#define CHUNK_MAXSIZE 32*1024*1024
 
 string d_url = "";
 string d_filename = "";
 int dl_type;
 string dl_dir;
 
-char *sizes[] = {
+const char *sizes[] = {
 	"B",
 	"KB",
 	"MB",
@@ -121,20 +106,28 @@ static void resumeDownload() {
 static int downloadThread(unsigned int args, void* arg){
 	curl_handle = curl_easy_init();
 	fh = fopen((dl_dir + d_filename).c_str(), "wb");
+	
 	while (downloaded_bytes < total_bytes) {
 		resumeDownload();
 		if (abort_download)
 			break;
 	}
+	
 	fclose(fh);
-	if (abort_download) state = ERROR;
-	else state = DOWNLOADED;
+	
+	if (abort_download)
+		state = ERROR;
+	else
+		state = DOWNLOADED;
+	
 	sceKernelExitDeleteThread(0);
 	return 0;
 }
 
 float format(float len) {
-	while (len > 1024) len = len / 1024.0f;
+	while (len > 1024)
+		len /= 1024.0f;
+	
 	return len;
 }
 
@@ -142,18 +135,21 @@ uint8_t quota(uint64_t len) {
 	uint8_t ret = 0;
 	while (len > 1024) {
 		ret++;
-		len = len / 1024;
+		len /= 1024;
 	}
 	return ret;
 }
 
 void launchDownload(const char *url) {
-	if (state != IDLE) return;
+	if (state != IDLE)
+		return;
+	
 	sprintf(asyncUrl, "%s", url);
 	sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
 	sceSysmoduleLoadModule(SCE_SYSMODULE_HTTP);
 	int ret = sceNetShowNetstat();
 	SceNetInitParam initparam;
+	
 	if (ret == SCE_NET_ERROR_ENOTINIT) {
 		void *net_memory = malloc(NET_INIT_SIZE);
 		initparam.memory = net_memory;
@@ -161,6 +157,7 @@ void launchDownload(const char *url) {
 		initparam.flags = 0;
 		sceNetInit(&initparam);
 	}
+	
 	sceNetCtlInit();
 	sceHttpInit(1*1024*1024);
 	SceUID thd = sceKernelCreateThread("Net Downloader Thread", &downloadThread, 0x10000100, 0x100000, 0, 0, NULL);
@@ -169,13 +166,16 @@ void launchDownload(const char *url) {
 }
 
 static int downloader_main(unsigned int args, void* arg) {
-	uLong zip_idx;
-	uLong zip_total;
+	SceCtrlData pad;
+	
+	vita2d_init();
+	vita2d_set_clear_color(BLACK);
+	vita2d_pgf *pgf;
+	pgf = vita2d_load_default_pgf();
+	
+	uLong zip_idx, zip_total;
 	uint8_t extract_started = 0;
 	uint64_t curr_extracted_bytes = 0;
-	SceCtrlData pad;
-	uint32_t oldpad;
-	vita2d_pgf *pgf;
 	char read_buffer[8192], fname[512];
 	unz_global_info global_info;
 	unz_file_info file_info;
@@ -185,19 +185,18 @@ static int downloader_main(unsigned int args, void* arg) {
 	char base_dir[256];
 	sprintf(base_dir, dl_dir.c_str());
 	
-	vita2d_init();
-	vita2d_set_clear_color(RGBA8(0, 0, 0, 255));
-
-	pgf = vita2d_load_default_pgf();
-	
 	// Getting free space on ux0
 	SceIoDevInfo info;
 	memset(&info, 0, sizeof(SceIoDevInfo));
 	char *dev_name = (char*)malloc(12);
 	sprintf(dev_name, "ux0:");
 	int res = sceIoDevctl(dev_name, 0x3001, NULL, 0, &info, sizeof(SceIoDevInfo));
-	if (res >= 0) free_storage = info.free_size;
-	else sceAppMgrGetDevInfo("ux0:", &dummy, &free_storage);
+	
+	if (res >= 0)
+		free_storage = info.free_size;
+	else
+		sceAppMgrGetDevInfo("ux0:", &dummy, &free_storage);
+	
 	free(dev_name);
 	
 	int install_state = 0;
@@ -206,11 +205,9 @@ static int downloader_main(unsigned int args, void* arg) {
 		
 		sceCtrlPeekBufferPositive(0, &pad, 1);
 
-		if ((pad.buttons & SCE_CTRL_CROSS) && (state >= FINISHED)) {
-			if (dl_type == VPK && !install_state) {
-				VitaPackage pkg = VitaPackage(std::string(dl_dir + d_filename));
-				install_state = pkg.Install();
-			}
+		if ((pad.buttons & SCE_CTRL_CROSS) && (state >= FINISHED) && (dl_type == VPK) && (!install_state)) {
+			VitaPackage pkg = VitaPackage(std::string(dl_dir + d_filename));
+			install_state = pkg.Install();
 		}
 		
 		if ((pad.buttons & SCE_CTRL_CIRCLE) && (state >= FINISHED))
@@ -219,28 +216,26 @@ static int downloader_main(unsigned int args, void* arg) {
 		vita2d_start_drawing();
 		vita2d_clear_screen();
 
-		vita2d_pgf_draw_text(pgf,  20,  30, RGBA8(255,255,0,255), 1.0f, "EasyVPK downloader");
-		vita2d_pgf_draw_text(pgf,  20, 514, RGBA8(255,255,0,255), 1.0f, "based on vitaQuakeIII downloader by Rinnegatamante");
-		vita2d_pgf_draw_textf(pgf, 20,  80, RGBA8(109,0,252,255), 1.0f, "Downloading %s", d_filename.c_str());
+		vita2d_pgf_draw_text(pgf,  20,  30, YELLOW, 1.0f, "EasyVPK downloader");
+		vita2d_pgf_draw_text(pgf,  20, 514, YELLOW, 1.0f, "based on vitaQuakeIII downloader by Rinnegatamante");
+		vita2d_pgf_draw_textf(pgf, 20,  80, PURPLE, 1.0f, "Downloading %s", d_filename.c_str());
 	
 		// Starting the download
 		launchDownload(d_url.c_str());
 		
 		if (state > DOWNLOADING) {
-			if (state >= FINISHED) {
-				if (install_state) 	vita2d_pgf_draw_textf(pgf, 20, 400, RGBA8(255,255,255,255), 1.0f, "Finished!\nPress O to exit.");
-				else				vita2d_pgf_draw_textf(pgf, 20, 400, RGBA8(255,255,255,255), 1.0f, "Press X to install. (May take several minutes)\nPress O to Exit");
-			}
+			if (state >= FINISHED)
+				vita2d_pgf_draw_text(pgf, 20, 400, WHITE, 1.0f, install_state ? "Finished!\nPress O to exit." : "Press X to install. (May take several minutes)\nPress O to Exit");
 			
 			if (state < MISSING)
-				vita2d_pgf_draw_textf(pgf, 20, 200, RGBA8(0,255,0,255), 1.0f, "Files downloaded successfully! (%.2f %s)", format(downloaded_bytes), sizes[quota(downloaded_bytes)]);
+				vita2d_pgf_draw_textf(pgf, 20, 200, GREEN, 1.0f, "Files downloaded successfully! (%.2f %s)", format(downloaded_bytes), sizes[quota(downloaded_bytes)]);
 			
 			if (state < FINISHED) {
-				vita2d_pgf_draw_text(pgf,  20, 220, RGBA8(255,255,255,255), 1.0f, "Extracting files, please wait!");
-				vita2d_pgf_draw_textf(pgf, 20, 300, RGBA8(255,255,255,255), 1.0f, "File: %lu / %lu", zip_idx, zip_total);
-				vita2d_pgf_draw_textf(pgf, 20, 320, RGBA8(255,255,255,255), 1.0f, "Filename: %s", fname);
-				vita2d_pgf_draw_textf(pgf, 20, 340, RGBA8(255,255,255,255), 1.0f, "Filesize: (%.2f %s / %.2f %s)", format(curr_extracted_bytes), sizes[quota(curr_extracted_bytes)], format(file_info.uncompressed_size), sizes[quota(file_info.uncompressed_size)]);
-				vita2d_pgf_draw_textf(pgf, 20, 360, RGBA8(255,255,255,255), 1.0f, "Total Progress: (%.2f %s / %.2f %s)", format(extracted_bytes), sizes[quota(extracted_bytes)], format(total_bytes), sizes[quota(total_bytes)]);
+				vita2d_pgf_draw_text(pgf,  20, 220, WHITE, 1.0f, "Extracting files, please wait!");
+				vita2d_pgf_draw_textf(pgf, 20, 300, WHITE, 1.0f, "File: %lu / %lu", zip_idx, zip_total);
+				vita2d_pgf_draw_textf(pgf, 20, 320, WHITE, 1.0f, "Filename: %s", fname);
+				vita2d_pgf_draw_textf(pgf, 20, 340, WHITE, 1.0f, "Filesize: (%.2f %s / %.2f %s)", format(curr_extracted_bytes), sizes[quota(curr_extracted_bytes)], format(file_info.uncompressed_size), sizes[quota(file_info.uncompressed_size)]);
+				vita2d_pgf_draw_textf(pgf, 20, 360, WHITE, 1.0f, "Total Progress: (%.2f %s / %.2f %s)", format(extracted_bytes), sizes[quota(extracted_bytes)], format(total_bytes), sizes[quota(total_bytes)]);
 				
 				if (dl_type == DATA) {
 					if (state < EXTRACTING) {
@@ -250,11 +245,15 @@ static int downloader_main(unsigned int args, void* arg) {
 						unzGetGlobalInfo(zipfile, &global_info);
 						zip_total = global_info.number_entry;
 						unzGoToFirstFile(zipfile);
+						
 						for (zip_idx = 0; zip_idx < zip_total; ++zip_idx) {
 							unzGetCurrentFileInfo(zipfile, &file_info, fname, 512, NULL, 0, NULL, 0);
 							total_bytes += file_info.uncompressed_size;
-							if ((zip_idx + 1) < zip_total) unzGoToNextFile(zipfile);
+							
+							if ((zip_idx + 1) < zip_total)
+								unzGoToNextFile(zipfile);
 						}
+						
 						zip_idx = 0;
 						unzGoToFirstFile(zipfile);
 						state = EXTRACTING;
@@ -267,6 +266,7 @@ static int downloader_main(unsigned int args, void* arg) {
 								unzGetCurrentFileInfo(zipfile, &file_info, fname, 512, NULL, 0, NULL, 0);
 								sprintf(filename, "%s%s", base_dir, fname); 
 								const size_t filename_length = strlen(filename);
+								
 								if (filename[filename_length - 1] == '/') {
 									sceIoMkdir(filename, 0777);
 								} else {
@@ -275,6 +275,7 @@ static int downloader_main(unsigned int args, void* arg) {
 									extract_started = 1;
 								}
 							}
+							
 							if (extract_started) {
 								int err = unzReadCurrentFile(zipfile, read_buffer, 8192);
 								if (err > 0) {
@@ -289,26 +290,29 @@ static int downloader_main(unsigned int args, void* arg) {
 									curr_extracted_bytes = 0;
 								}
 							}
+							
 							if (!extract_started) {
-								if ((zip_idx + 1) < zip_total) unzGoToNextFile(zipfile);
+								if ((zip_idx + 1) < zip_total)
+									unzGoToNextFile(zipfile);
 								zip_idx++;
 							}
+							
 						} else {
 							unzClose(zipfile);
 							sceIoRemove(("ux0:/data/" + d_filename).c_str());
 							state = FINISHED;
 						}
 					}
-				} else {
-					state = FINISHED;
-				}
+					
+				} else state = FINISHED;
+				
 			} else if (state == ERROR) {
-				vita2d_pgf_draw_text(pgf, 20, 200, RGBA8(255,0,0,255), 1.0f, "ERROR: Not enough free space on ux0...");
-				vita2d_pgf_draw_textf(pgf, 20, 220, RGBA8(255,255,255,255), 1.0f, "Please free %.2f %s and restart this core!", format(total_bytes * 2 - free_storage), sizes[quota(total_bytes * 2 - free_storage)]);
-			} else if (state == FINISHED) {
-				vita2d_pgf_draw_text(pgf, 20, 220, RGBA8(0,255,0,255), 1.0f, "Files extracted succesfully!");
+				vita2d_pgf_draw_text(pgf,  20, 200,   RED, 1.0f, "ERROR: Not enough free space on ux0...");
+				vita2d_pgf_draw_textf(pgf, 20, 220, WHITE, 1.0f, "Please free %.2f %s and restart this core!", format(total_bytes * 2 - free_storage), sizes[quota(total_bytes * 2 - free_storage)]);
+			} else if (state == FINISHED && DATA) {
+				vita2d_pgf_draw_text(pgf, 20, 220, GREEN, 1.0f, "Files extracted succesfully!");
 			}
-		} else vita2d_pgf_draw_textf(pgf, 20, 200, RGBA8(255,255,255,255), 1.0f, "Downloading files, please wait. (%.2f %s / %.2f %s)", format(downloaded_bytes), sizes[quota(downloaded_bytes)], format(total_bytes), sizes[quota(total_bytes)]);
+		} else vita2d_pgf_draw_textf(pgf, 20, 200, WHITE, 1.0f, "Downloading files, please wait. (%.2f %s / %.2f %s)", format(downloaded_bytes), sizes[quota(downloaded_bytes)], format(total_bytes), sizes[quota(total_bytes)]);
 
 		vita2d_end_drawing();
 		vita2d_swap_buffers();
@@ -368,7 +372,7 @@ void Popup::reset() {
 	total_bytes = 0xFFFFFFFF;
 }
 
-void Popup::free() {
+/*void Popup::free() {
     vita2d_free_texture(desc);
     vita2d_free_texture(desc2);
-}
+}*/

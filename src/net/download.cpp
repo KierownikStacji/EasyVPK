@@ -1,25 +1,21 @@
 #define _GNU_SOURCE
-#include <psp2/kernel/processmgr.h>
-#include <psp2/display.h>
 
+#include "download.hpp"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <psp2/kernel/processmgr.h>
 #include <psp2/net/net.h>
 #include <psp2/net/netctl.h>
 #include <psp2/net/http.h>
 #include <psp2/libssl.h>
-
 #include <psp2/io/fcntl.h>
 #include <curl/curl.h>
 
-#include <stdio.h>
-#include <malloc.h>
-#include <string>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <stdlib.h>
-
-#include "../main.hpp"
 #include "../utils/filesystem.hpp"
+
 
 CURL *curl;
 int plFD;
@@ -28,7 +24,7 @@ void netInit() {
 	sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
 
 	SceNetInitParam netInitParam;
-	int size = 1*1024*1024;
+	int size = NET_INIT_SIZE;
 	netInitParam.memory = malloc(size);
 	netInitParam.size = size;
 	netInitParam.flags = 0;
@@ -46,8 +42,8 @@ void netTerm() {
 void httpInit() {
 	sceSysmoduleLoadModule(SCE_SYSMODULE_SSL);
 	sceSysmoduleLoadModule(SCE_SYSMODULE_HTTPS);
-	sceHttpInit(1*1024*1024);
-	sceSslInit(1*1024*1024);
+	sceHttpInit(NET_INIT_SIZE);
+	sceSslInit(NET_INIT_SIZE);
 }
 
 void httpTerm() {
@@ -67,7 +63,7 @@ void curlDownload(const char *url, const char *dest) {
 
 	curl_global_init(CURL_GLOBAL_ALL);
 	curl = curl_easy_init();
-	if(curl) {
+	if (curl) {
 		curl_easy_reset(curl);
 		curl_easy_setopt(curl, CURLOPT_URL, url);
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
@@ -117,14 +113,14 @@ std::string curlDownloadKeepName(char const*const url, std::string dst) {
     std::string header = Filesystem::readFile("ux0:data/Easy_VPK/head.tmp");
 
 	if (header.find("filename=\"") != string::npos) {
-		header = header.substr(header.find("filename=\"")+10);
+		header = header.substr(header.find("filename=\"") + 10);
 		header = header.substr(0, header.find("\""));
 	} else if (header.find("location: ") != string::npos) {
-		header = header.substr(header.find("location: ")+10);
-		header = header.substr(0, header.find("\n")-1);
+		header = header.substr(header.find("location: ") + 10);
+		header = header.substr(0, header.find("\n") - 1);
 
 		while (header.find("/") != string::npos)
-			header = header.substr(header.find("/")+1);
+			header = header.substr(header.find("/") + 1);
 	}
 
     Filesystem::copyFile("ux0:data/Easy_VPK/plugin.tmp", dst+header);

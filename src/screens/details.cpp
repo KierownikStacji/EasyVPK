@@ -1,11 +1,34 @@
-#include "../main.hpp"
-#include "../utils/format.hpp"
-
 #include "details.hpp"
 
-#define maxImageHeight 272
+#include <fstream>
+
+#include "../utils/filesystem.hpp"
+#include "../net/download.hpp"
+
+
+std::string formatLongDesc(std::string str, vita2d_font *font, int maxWidth, int size) {
+    std::string description = "";
+    int lastSafePos = 0;
+    int addedChars = 1;
+
+    for (int i = 0; i < str.length(); i++) {        
+        description += str[i];
+
+        if (vita2d_font_text_width(font, size, description.c_str()) > maxWidth) {
+            description.insert((lastSafePos == 0 ? i : lastSafePos) + addedChars, "\n");
+
+            addedChars++;
+        }
+        
+        if (str[i] == ' ' || str[i] == '.' || str[i] == ',' || str[i] == '-' || str[i] == ')')
+            lastSafePos = i;
+    }
+
+    return description;
+}
 
 void Details::draw(SharedData &sharedData, unsigned int button) {
+	
     if (sharedData.initDetail) {
         cycleCounter = 0;
         imageCycles = 0;
@@ -18,7 +41,7 @@ void Details::draw(SharedData &sharedData, unsigned int button) {
     cycleCounter++;
     if (cycleCounter == 300) {
         cycleCounter = 0;
-        if (imageCycles < sharedData.screenshots.size()-1)
+        if (imageCycles < sharedData.screenshots.size() - 1)
 			imageCycles++;
         else
 			imageCycles = 0;
@@ -34,23 +57,23 @@ void Details::draw(SharedData &sharedData, unsigned int button) {
         }
     }
 
-    vita2d_font_draw_textf(sharedData.font, 20, 45, RGBA8(255,255,255,255), 40, "%s %s", sharedData.vpks[sharedData.cursorY]["name"].get<string>().c_str(), sharedData.vpks[sharedData.cursorY]["version"].get<string>().c_str());
-    vita2d_font_draw_textf(sharedData.font, 20, 90, RGBA8(215,215,215,255), 20, "by %s", sharedData.vpks[sharedData.cursorY]["author"].get<string>().c_str());
-    
-    vita2d_font_draw_textf(sharedData.font, 20, 317, RGBA8(255,255,255,255), 30, "%s", longDescription.c_str());
+    vita2d_font_draw_textf(sharedData.font, 20,  45,  WHITE, 40, "%s %s", sharedData.vpks[sharedData.cursorY]["name"].get<string>().c_str(), sharedData.vpks[sharedData.cursorY]["version"].get<string>().c_str());
+    vita2d_font_draw_textf(sharedData.font, 20,  80,  LGREY, 20, "(%s)",sharedData.vpks[sharedData.cursorY]["date"].get<string>().c_str());
+    vita2d_font_draw_text( sharedData.font, 20, 110, LGREY2, 28, sharedData.vpks[sharedData.cursorY]["author"].get<string>().c_str());
+    vita2d_font_draw_text( sharedData.font, 20, 317,  WHITE, 30, longDescription.c_str());
 
 	if (sharedData.vpks[sharedData.cursorY]["data"].get<string>().empty())
-		vita2d_draw_texture(desc1, 0, 504);
+		vita2d_draw_texture(navbar1, 0, 504);
 	else
-		vita2d_draw_texture(desc5, 0, 504);
+		vita2d_draw_texture(navbar2, 0, 504);
 
     if (sharedData.scene == 1) {
         switch (button) {
             case SCE_CTRL_CIRCLE:
 			    if (sharedData.blockCircle)
 					break;
+				
                 sharedData.scene = 0;
-
                 break;
             case SCE_CTRL_CROSS:
                 if (sharedData.blockCross)
@@ -79,5 +102,6 @@ void Details::draw(SharedData &sharedData, unsigned int button) {
 }
 
 void Details::free() {
-    vita2d_free_texture(desc1);
+    vita2d_free_texture(navbar1);
+    vita2d_free_texture(navbar2);
 }

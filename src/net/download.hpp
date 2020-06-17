@@ -1,4 +1,8 @@
-#pragma once
+#include "../main.hpp"
+
+
+#define NET_INIT_SIZE 1*1024*1024
+
 
 void netInit();
 void netTerm();

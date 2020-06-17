@@ -18,10 +18,10 @@ include("${VITASDK}/share/vita.cmake" REQUIRED)
 
 set(VITA_APP_NAME "EasyVPK")
 set(VITA_TITLEID  "ESVPK0009")
-set(VITA_VERSION  "01.21")
+set(VITA_VERSION  "01.22")
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wl,-q -Wall -O2")
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-psabi -std=c++17 -fpermissive")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-sign-compare -Wno-unused-parameter -Wno-psabi -Wunused-variable -Wwrite-strings -fpermissive -std=c++17 -Wimplicit-fallthrough")
 
 set(VITA_MKSFOEX_FLAGS "${VITA_MKSFOEX_FLAGS} -d PARENTAL_LEVEL=7")
 
@@ -76,7 +76,6 @@ add_executable(easyvpk
     src/net/download.cpp
     src/utils/filesystem.cpp
     src/utils/search.cpp
-    src/utils/format.cpp
     src/utils/vitaPackage.cpp
     src/utils/zip.cpp
     src/utils/sha1.c
@@ -85,7 +84,6 @@ add_executable(easyvpk
 
 target_link_libraries(easyvpk
     vita2d
-    sqlite
     ${CURL_LIBRARIES}
     ${OPENSSL_LIBRARIES}
     freetype
@@ -106,7 +104,6 @@ target_link_libraries(easyvpk
     SceSsl_stub
     SceIofilemgr_stub
     SceHttp_stub
-    ScePower_stub
     SceIme_stub
     SceSysmodule_stub
     SceShellSvc_stub 
@@ -125,10 +122,7 @@ vita_create_vpk(easyvpk.vpk ${VITA_TITLEID} easyvpk.self
   FILE sce_sys/livearea/contents/startup.png sce_sys/livearea/contents/startup.png
   FILE sce_sys/livearea/contents/template.xml sce_sys/livearea/contents/template.xml
   FILE src/graphics/bg.png resources/bg.png
-  FILE src/graphics/desc.png resources/desc.png
-  FILE src/graphics/desc1.png resources/desc1.png
-  FILE src/graphics/desc2.png resources/desc2.png
-  FILE src/graphics/desc3.png resources/desc3.png
-  FILE src/graphics/desc4.png resources/desc4.png
-  FILE src/graphics/desc5.png resources/desc5.png
+  FILE src/graphics/navbar0.png resources/navbar0.png
+  FILE src/graphics/navbar1.png resources/navbar1.png
+  FILE src/graphics/navbar2.png resources/navbar2.png
 )

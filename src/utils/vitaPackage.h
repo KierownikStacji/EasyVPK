@@ -1,12 +1,16 @@
 #pragma once
 
-#include <string>
 #include <stdexcept>
+
 #include "filesystem.hpp"
 
 #ifndef PACKAGE_TEMP_FOLDER
 	#define PACKAGE_TEMP_FOLDER "ux0:/temp/pkg/"
 #endif
+
+#define ntohl __builtin_bswap32
+#define SFO_MAGIC 0x46535000
+
 
 class VitaPackage{
 public:

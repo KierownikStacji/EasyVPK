@@ -4,10 +4,6 @@
 
 #include "vitaPackage.h"
 
-#include "filesystem.hpp"
-#include "sha1.h"
-#include "zip.h"
-
 #include <psp2/appmgr.h>
 #include <psp2/io/fcntl.h>
 #include <psp2/io/stat.h>
@@ -15,12 +11,14 @@
 #include <psp2/promoterutil.h>
 #include <psp2/sysmodule.h>
 
-#define ntohl __builtin_bswap32
+#include "filesystem.hpp"
+#include "sha1.h"
+#include "zip.h"
+
 
 extern unsigned char _binary_assets_head_bin_start;
 extern unsigned char _binary_assets_head_bin_size;
 
-#define SFO_MAGIC 0x46535000
 
 static void fpkg_hmac(const uint8_t* data, unsigned int len, uint8_t hmac[16]) {
 	
@@ -67,8 +65,8 @@ typedef struct SfoEntry
     uint32_t dataofs;
 } __attribute__((packed)) SfoEntry;
 
-int getSfoString(char* buffer, const char* name, char* string, unsigned int length)
-{
+int getSfoString(char* buffer, const char* name, char* string, unsigned int length) {
+	
     auto* header = (SfoHeader*)buffer;
     auto* entries = (SfoEntry*)((uint32_t)buffer + sizeof(SfoHeader));
 
@@ -101,7 +99,6 @@ int WriteFile(const char* file, const void* buf, unsigned int size) {
 }
 
 int checkFileExist(const char* file) {
-	
     SceIoStat stat;
     memset(&stat, 0, sizeof(SceIoStat));
 
