@@ -51,6 +51,22 @@ char *bytes_string;
 static CURL *curl_handle = NULL;
 
 
+float format(float len) {
+	while (len > 1024)
+		len /= 1024.0f;
+	
+	return len;
+}
+
+uint8_t quota(uint64_t len) {
+	uint8_t ret = 0;
+	while (len > 1024) {
+		ret++;
+		len /= 1024;
+	}
+	return ret;
+}
+
 static size_t write_cb(void *ptr, size_t size, size_t nmemb, void *stream) {
 	
 	if (abort_download)
@@ -124,22 +140,6 @@ static int downloadThread(unsigned int args, void* arg){
 	
 	sceKernelExitDeleteThread(0);
 	return 0;
-}
-
-float format(float len) {
-	while (len > 1024)
-		len /= 1024.0f;
-	
-	return len;
-}
-
-uint8_t quota(uint64_t len) {
-	uint8_t ret = 0;
-	while (len > 1024) {
-		ret++;
-		len /= 1024;
-	}
-	return ret;
 }
 
 void launchDownload(const char *url) {
