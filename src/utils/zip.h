@@ -8,14 +8,14 @@
 
 class Zipfile {
 public:
-  Zipfile(const std::string zip_path);
-  ~Zipfile();
+	Zipfile(const std::string zip_path);
+	~Zipfile();
 
-  int Unzip(const std::string outpath);
-  int UncompressedSize();
+	int Unzip(const std::string outpath);
+	int UncompressedSize();
 
 private:
-  unzFile zipfile_;
-  uint64_t uncompressed_size_ = 0;
-  unz_global_info global_info_;
+	unzFile zipfile_;
+	uint64_t uncompressed_size_ = 0;
+	unz_global_info global_info_;
 };

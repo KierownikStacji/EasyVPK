@@ -7,8 +7,8 @@
 #define CHUNK_MAXSIZE 32*1024*1024
 
 
-#define VPK			0
-#define DATA		1
+#define VPK         0
+#define DATA        1
 
 #define IDLE        0
 #define DOWNLOADING 1
@@ -20,11 +20,11 @@
 
 
 class Popup {
-    public:
-        void draw(SharedData &sharedData);
+	public:
+		void draw(SharedData &sharedData);
 		void reset();
 
-    private:
+	private:
 		string getDataFileName(const string& s);
-        vector<string> installFiles;
+		vector<string> installFiles;
 };

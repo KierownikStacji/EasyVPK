@@ -7,15 +7,15 @@
 
 
 class Details {
-    public:
-        void draw(SharedData &sharedData, unsigned int button);
-        void free();
+	public:
+		void draw(SharedData &sharedData, unsigned int button);
+		void free();
 
-    private:
-        string longDescription;
-        int lastNum = 0;
-        int imageCycles = 0;
-        int cycleCounter = 0;
-        vita2d_texture *navbar1 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/navbar1.png");
-        vita2d_texture *navbar2 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/navbar2.png");
+	private:
+		string longDescription;
+		int lastNum = 0;
+		int imageCycles = 0;
+		int cycleCounter = 0;
+		vita2d_texture *navbar1 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/navbar1.png");
+		vita2d_texture *navbar2 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/navbar2.png");
 };

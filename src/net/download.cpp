@@ -54,8 +54,8 @@ void httpTerm() {
 }
 
 static size_t write_data_to_disk(void *ptr, size_t size, size_t nmemb, void *stream){
-    size_t written = sceIoWrite(   *(int*) stream , ptr , size*nmemb);
-    return written;
+	size_t written = sceIoWrite( *(int*) stream, ptr, size*nmemb);
+	return written;
 }
 
 void curlDownload(const char *url, const char *dest) {
@@ -83,13 +83,13 @@ void curlDownload(const char *url, const char *dest) {
 }
 
 std::string curlDownloadKeepName(char const*const url, std::string dst) {
-    CURL *curl;
+	CURL *curl;
 
-    SceUID file = sceIoOpen("ux0:data/Easy_VPK/plugin.tmp", SCE_O_CREAT | SCE_O_WRONLY, 0777);
-    SceUID head = sceIoOpen("ux0:data/Easy_VPK/head.tmp", SCE_O_CREAT | SCE_O_WRONLY, 0777);
+	SceUID file = sceIoOpen("ux0:data/Easy_VPK/plugin.tmp", SCE_O_CREAT | SCE_O_WRONLY, 0777);
+	SceUID head = sceIoOpen("ux0:data/Easy_VPK/head.tmp", SCE_O_CREAT | SCE_O_WRONLY, 0777);
 
-    curl = curl_easy_init();
-    if (curl) {
+	curl = curl_easy_init();
+	if (curl) {
 		curl_easy_setopt(curl, CURLOPT_URL, url);
 		curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36");
 		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
@@ -104,13 +104,13 @@ std::string curlDownloadKeepName(char const*const url, std::string dst) {
 		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data_to_disk);
 		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &file);
 
-        curl_easy_perform(curl);
-    }
+		curl_easy_perform(curl);
+	}
 
-    sceIoClose(file);
-    sceIoClose(head);
+	sceIoClose(file);
+	sceIoClose(head);
 
-    std::string header = Filesystem::readFile("ux0:data/Easy_VPK/head.tmp");
+	std::string header = Filesystem::readFile("ux0:data/Easy_VPK/head.tmp");
 
 	if (header.find("filename=\"") != string::npos) {
 		header = header.substr(header.find("filename=\"") + 10);
@@ -123,13 +123,13 @@ std::string curlDownloadKeepName(char const*const url, std::string dst) {
 			header = header.substr(header.find("/") + 1);
 	}
 
-    Filesystem::copyFile("ux0:data/Easy_VPK/plugin.tmp", dst+header);
+	Filesystem::copyFile("ux0:data/Easy_VPK/plugin.tmp", dst+header);
 
-    sceIoRemove("ux0:data/Easy_VPK/plugin.tmp");
-    sceIoRemove("ux0:data/Easy_VPK/head.tmp");
-    
-    curl_easy_cleanup(curl);
+	sceIoRemove("ux0:data/Easy_VPK/plugin.tmp");
+	sceIoRemove("ux0:data/Easy_VPK/head.tmp");
+
+	curl_easy_cleanup(curl);
 	curl_global_cleanup();
 
-    return header;
+	return header;
 }

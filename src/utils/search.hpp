@@ -18,6 +18,6 @@ uint8_t *getImeDialogInputTextUTF8();
 int isImeDialogRunning();
 int updateImeDialog();
 
-json sortJson(string filter, json original);
+json filterJson(string filter, json original);
 
 string toLowercase(string strToConvert);

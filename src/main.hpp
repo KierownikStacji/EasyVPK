@@ -30,16 +30,21 @@ extern unsigned int basicfont_size;
 extern unsigned char basicfont[];
 
 struct SharedData {
-    int scene = 0;
-    int cursorY = 0;
-    bool blockCross  = false;
-    bool blockSquare = false;
-    bool blockCircle = false;
-    bool initDetail  = true;
+	int scene = 0;
+	int cursorY = 0;
+	bool blockCross 	= false;
+	bool blockSquare 	= false;
+	bool blockCircle 	= false;
+	bool blockTriangle 	= false;
+	bool blockStart 	= false;
+	bool blockSelect 	= false;
+	bool blockLTrigger 	= false;
+	bool blockRTrigger 	= false;
+	bool initDetail  = true;
 	int dl_type_sd = 0; // VPK
-    string vpkDownloadPath = "ux0:VPK/";
-    vector<vita2d_texture *> screenshots;
-    json vpks;
-    json original;
-    vita2d_font *font = vita2d_load_font_mem(basicfont, basicfont_size);
+	string vpkDownloadPath = "ux0:VPK/";
+	vector<vita2d_texture *> screenshots;
+	json vpks;
+	json original;
+	vita2d_font *font = vita2d_load_font_mem(basicfont, basicfont_size);
 };

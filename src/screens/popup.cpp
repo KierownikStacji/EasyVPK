@@ -22,6 +22,8 @@
 
 
 int state = IDLE;
+int install_state;
+bool isInstalling;
 
 string d_url = "";
 string d_filename = "";
@@ -159,10 +161,28 @@ void launchDownload(const char *url) {
 	}
 	
 	sceNetCtlInit();
-	sceHttpInit(1*1024*1024);
+	sceHttpInit(NET_INIT_SIZE);
 	SceUID thd = sceKernelCreateThread("Net Downloader Thread", &downloadThread, 0x10000100, 0x100000, 0, 0, NULL);
 	sceKernelStartThread(thd, 0, NULL);
 	state = DOWNLOADING;
+}
+
+static int installThread(unsigned int args, void* arg){
+	VitaPackage pkg = VitaPackage(std::string(dl_dir + d_filename));
+	install_state = pkg.Install();
+	isInstalling = false;
+	
+	sceKernelExitDeleteThread(0);
+	return 0;
+}
+
+void launchInstaller() {
+	if (isInstalling)
+		return;
+	
+	SceUID thd = sceKernelCreateThread("Installer Thread", &installThread, 0x10000100, 0x100000, 0, 0, NULL);
+	sceKernelStartThread(thd, 0, NULL);
+	isInstalling = true;
 }
 
 static int downloader_main(unsigned int args, void* arg) {
@@ -199,22 +219,23 @@ static int downloader_main(unsigned int args, void* arg) {
 	
 	free(dev_name);
 	
-	int install_state = 0;
+	install_state = 0;
+	isInstalling = false;
 	
 	for (;;) {
 		
 		sceCtrlPeekBufferPositive(0, &pad, 1);
 
-		if ((pad.buttons & SCE_CTRL_CROSS) && (state >= FINISHED) && (dl_type == VPK) && (!install_state)) {
-			VitaPackage pkg = VitaPackage(std::string(dl_dir + d_filename));
-			install_state = pkg.Install();
-		}
+		if ((pad.buttons & SCE_CTRL_CROSS) && (state >= FINISHED) && (dl_type == VPK) && (!install_state))
+			launchInstaller();
 		
 		if ((pad.buttons & SCE_CTRL_CIRCLE) && (state >= FINISHED))
 			break;
 
 		vita2d_start_drawing();
 		vita2d_clear_screen();
+		
+		if (isInstalling) vita2d_pgf_draw_text(pgf, 20, 380, RED, 1.0f, "Installing, Please wait...");
 
 		vita2d_pgf_draw_text(pgf,  20,  30, YELLOW, 1.0f, "EasyVPK downloader");
 		vita2d_pgf_draw_text(pgf,  20, 514, YELLOW, 1.0f, "based on vitaQuakeIII downloader by Rinnegatamante");
@@ -225,7 +246,7 @@ static int downloader_main(unsigned int args, void* arg) {
 		
 		if (state > DOWNLOADING) {
 			if (state >= FINISHED)
-				vita2d_pgf_draw_textf(pgf, 20, 400, WHITE, 1.0f, "%s\nPress O to exit.", install_state ? "Finished!" : "Press X to install. (May take several minutes)");
+				vita2d_pgf_draw_textf(pgf, 20, 400, WHITE, 1.0f, "%s\nPress O to exit.", (install_state || dl_type) ? "Finished!" : "Press X to install. (May take several minutes)");
 			
 			if (state < MISSING)
 				vita2d_pgf_draw_textf(pgf, 20, 200, GREEN, 1.0f, "Files downloaded successfully! (%.2f %s)", format(downloaded_bytes), sizes[quota(downloaded_bytes)]);
@@ -312,7 +333,10 @@ static int downloader_main(unsigned int args, void* arg) {
 			} else if (state == FINISHED && DATA) {
 				vita2d_pgf_draw_text(pgf, 20, 220, GREEN, 1.0f, "Files extracted succesfully!");
 			}
-		} else vita2d_pgf_draw_textf(pgf, 20, 200, WHITE, 1.0f, "Downloading files, please wait. (%.2f %s / %.2f %s)", format(downloaded_bytes), sizes[quota(downloaded_bytes)], format(total_bytes), sizes[quota(total_bytes)]);
+		} else {
+			if (total_bytes == 0xFFFFFFFF) vita2d_pgf_draw_text(pgf, 20, 200, WHITE, 1.0f, "Downloading files, please wait.");
+			else vita2d_pgf_draw_textf(pgf, 20, 200, WHITE, 1.0f, "Downloading files, please wait. (%.2f %s / %.2f %s)", format(downloaded_bytes), sizes[quota(downloaded_bytes)], format(total_bytes), sizes[quota(total_bytes)]);
+		}
 
 		vita2d_end_drawing();
 		vita2d_swap_buffers();
@@ -356,13 +380,13 @@ void Popup::draw(SharedData &sharedData) {
 }
 
 string Popup::getDataFileName(const string& s) {
-    char sep = '/';
+	char sep = '/';
 
-    size_t i = s.rfind(sep, s.length());
-    if (i != string::npos)
+	size_t i = s.rfind(sep, s.length());
+	if (i != string::npos)
 		return (s.substr(i + 1, s.length() - i));
 
-    return ("");
+	return ("");
 }
 
 void Popup::reset() {
@@ -371,8 +395,3 @@ void Popup::reset() {
 	extracted_bytes = 0;
 	total_bytes = 0xFFFFFFFF;
 }
-
-/*void Popup::free() {
-    vita2d_free_texture(desc);
-    vita2d_free_texture(desc2);
-}*/
