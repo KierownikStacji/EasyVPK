@@ -1,5 +1,6 @@
 /*
  * Copyright (c) 2015 Sergi Granell (xerpi)
+ * Copyright (c) 2020 Itai Levin (Electric1447)
  */
 
 #define _GNU_SOURCE char *strcasestr(const char *haystack, const char *needle);
@@ -13,12 +14,11 @@
 #include <math.h>
 
 #include <vitasdk.h>
-#include <vita2d.h>
 #include <curl/curl.h>
 
 #include "../utils/minizip/unzip.h"
-#include "../utils/vitaPackage.h"
 #include "../utils/filesystem.hpp"
+#include "../utils/vitaPackage.h"
 
 
 int state = IDLE;
@@ -29,6 +29,7 @@ string d_url = "";
 string d_filename = "";
 int dl_type;
 string dl_dir;
+bool dl_isEasyVPK = false;
 
 const char *sizes[] = {
 	"B",
@@ -226,7 +227,7 @@ static int downloader_main(unsigned int args, void* arg) {
 		
 		sceCtrlPeekBufferPositive(0, &pad, 1);
 
-		if ((pad.buttons & SCE_CTRL_CROSS) && (state >= FINISHED) && (dl_type == VPK) && (!install_state))
+		if ((pad.buttons & SCE_CTRL_CROSS) && (state >= FINISHED) && (dl_type == VPK) && (!install_state) && (!dl_isEasyVPK))
 			launchInstaller();
 		
 		if ((pad.buttons & SCE_CTRL_CIRCLE) && (state >= FINISHED))
@@ -246,7 +247,7 @@ static int downloader_main(unsigned int args, void* arg) {
 		
 		if (state > DOWNLOADING) {
 			if (state >= FINISHED)
-				vita2d_pgf_draw_textf(pgf, 20, 400, WHITE, 1.0f, "%s\nPress O to exit.", (install_state || dl_type) ? "Finished!" : "Press X to install. (May take several minutes)");
+				vita2d_pgf_draw_textf(pgf, 20, 400, WHITE, 1.0f, "%s\nPress O to exit.", (install_state || dl_type || dl_isEasyVPK) ? "Finished!" : "Press X to install. (May take several minutes)");
 			
 			if (state < MISSING)
 				vita2d_pgf_draw_textf(pgf, 20, 200, GREEN, 1.0f, "Files downloaded successfully! (%.2f %s)", format(downloaded_bytes), sizes[quota(downloaded_bytes)]);
@@ -349,6 +350,8 @@ void Popup::draw(SharedData &sharedData) {
 	reset();
 	
 	dl_type = sharedData.dl_type_sd;
+	dl_isEasyVPK = sharedData.vpks[sharedData.cursorY]["titleid"].get<string>() == "ESVPK0009";
+	
 	switch (dl_type) {
 		case VPK:
 			d_url = sharedData.vpks[sharedData.cursorY]["url"].get<string>().c_str();

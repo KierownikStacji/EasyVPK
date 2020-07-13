@@ -9,16 +9,16 @@
 
 
 #define PARENT_URL "http://rinnegatamante.it/vitadb/"
-#define HOMEBREW_URL PARENT_URL "list_hbs_json.json"
+#define HOMEBREW_URL PARENT_URL "list_hbs_json.php"
 
 #define BLACK   RGBA8(  0,   0,   0, 255)
 #define WHITE   RGBA8(255, 255, 255, 255)
 #define LGREY   RGBA8(191, 191, 191, 255)
-#define LGREY2 	RGBA8(215, 215, 215, 255)
+#define LGREY2  RGBA8(215, 215, 215, 255)
 #define RED     RGBA8(255,   0,   0, 255)
 #define GREEN   RGBA8(  0, 255,   0, 255)
-#define BLUE   	RGBA8(  0,   0, 255, 255)
-#define YELLOW 	RGBA8(255, 255,   0, 255)
+#define BLUE    RGBA8(  0,   0, 255, 255)
+#define YELLOW  RGBA8(255, 255,   0, 255)
 #define PURPLE  RGBA8(109,   0, 252, 255)
 
 

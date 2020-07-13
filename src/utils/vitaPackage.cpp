@@ -265,3 +265,34 @@ void UpdatePackage::MakeHeadBin() {
 	if (ret < 0)
 		throw std::runtime_error("Error faking app signature");
 }
+
+bool isPackageInstalled(std::string titleid) {
+	// FIXME Don't reload the module every time
+
+	// ScePaf is required for PromoterUtil
+	uint32_t ptr[0x100] = {0};
+	ptr[0] = 0;
+	ptr[1] = (uint32_t)&ptr[0];
+	uint32_t scepaf_argp[] = {0x400000, 0xEA60, 0x40000, 0, 0};
+	sceSysmoduleLoadModuleInternalWithArg(SCE_SYSMODULE_INTERNAL_PAF, sizeof(scepaf_argp), scepaf_argp, ptr);
+
+	sceSysmoduleLoadModuleInternal(SCE_SYSMODULE_INTERNAL_PROMOTER_UTIL);
+
+	int ret = scePromoterUtilityInit();
+	if (ret < 0)
+		throw std::runtime_error("scePromoterUtilityInit() = " + ret);
+
+	int res;
+	int installed = scePromoterUtilityCheckExist(titleid.c_str(), &res);
+
+	scePromoterUtilityExit();
+
+	return installed >= 0;
+}
+
+void openApp(std::string titleid) {
+	char uri[32];
+	snprintf(uri, sizeof(uri), "psgm:play?titleid=%s", titleid.c_str());
+
+	sceAppMgrLaunchAppByUri(0x20000, uri);
+}

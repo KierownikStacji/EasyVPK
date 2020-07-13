@@ -1,5 +1,3 @@
-#include <vita2d.h>
-
 #include "../main.hpp"
 
 class List {

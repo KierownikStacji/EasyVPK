@@ -14,7 +14,9 @@
 #include "screens/details.hpp"
 #include "screens/popup.hpp"
 
+
 SceCtrlData pad;
+
 
 void initSceAppUtil() {
 
@@ -65,9 +67,10 @@ int main() {
 
 		vita2d_draw_texture(bgIMG, 0, 0);
 
-		if (pad.buttons != SCE_CTRL_CROSS ) sharedData.blockCross = false;
+		if (pad.buttons != SCE_CTRL_CROSS ) sharedData.blockCross  = false;
 		if (pad.buttons != SCE_CTRL_SQUARE) sharedData.blockSquare = false;
 		if (pad.buttons != SCE_CTRL_CIRCLE) sharedData.blockCircle = false;
+		if (pad.buttons != SCE_CTRL_START ) sharedData.blockStart  = false;
 		
 		if (sharedData.scene == 0) listView.draw(sharedData, pad.buttons);
 		if (sharedData.scene == 1) detailsView.draw(sharedData, pad.buttons);
@@ -78,7 +81,7 @@ int main() {
 		vita2d_swap_buffers();
 		sceDisplayWaitVblankStart();
 
-		if (pad.buttons == SCE_CTRL_SELECT)
+		if (pad.buttons == SCE_CTRL_SELECT || sharedData.scene == -1)
 			break;
 	}
 

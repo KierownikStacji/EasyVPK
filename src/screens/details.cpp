@@ -2,8 +2,9 @@
 
 #include <fstream>
 
-#include "../utils/filesystem.hpp"
 #include "../net/download.hpp"
+#include "../utils/filesystem.hpp"
+#include "../utils/vitaPackage.h"
 
 
 std::string formatLongDesc(std::string str, vita2d_font *font, int maxWidth, int size) {
@@ -62,10 +63,13 @@ void Details::draw(SharedData &sharedData, unsigned int button) {
 	vita2d_font_draw_text( sharedData.font, 20, 110, LGREY2, 28, sharedData.vpks[sharedData.cursorY]["author"].get<string>().c_str());
 	vita2d_font_draw_text( sharedData.font, 20, 317,  WHITE, 30, longDescription.c_str());
 
-	if (sharedData.vpks[sharedData.cursorY]["data"].get<string>().empty())
-		vita2d_draw_texture(navbar1, 0, 504);
-	else
-		vita2d_draw_texture(navbar2, 0, 504);
+	bool _hasData = !sharedData.vpks[sharedData.cursorY]["data"].get<string>().empty();
+	bool _isInstalled = isPackageInstalled(sharedData.vpks[sharedData.cursorY]["titleid"].get<string>()) && !(sharedData.vpks[sharedData.cursorY]["titleid"].get<string>() == "ESVPK0009");
+	
+	if      (!_hasData && !_isInstalled) vita2d_draw_texture(navbar1, 0, 504);
+	else if (_hasData  && !_isInstalled) vita2d_draw_texture(navbar2, 0, 504);
+	else if (!_hasData &&  _isInstalled) vita2d_draw_texture(navbar3, 0, 504);
+	else if (_hasData  &&  _isInstalled) vita2d_draw_texture(navbar4, 0, 504);
 
 	if (sharedData.scene == 1) {
 		switch (button) {
@@ -82,20 +86,34 @@ void Details::draw(SharedData &sharedData, unsigned int button) {
 				sharedData.dl_type_sd = 0; // VPK
 				sharedData.scene = 2;
 				
-				sharedData.blockCross = true;
+				sharedData.blockCircle = true;				
+				sharedData.blockCross  = true;
 				sharedData.blockSquare = true;
-				sharedData.blockCircle = true;
+				sharedData.blockStart  = true;
 				break;
 			case SCE_CTRL_SQUARE:
-				if (sharedData.blockSquare)
+				if (sharedData.blockSquare || !_hasData)
 					break;
 
 				sharedData.dl_type_sd = 1; // DATA
 				sharedData.scene = 2;
 				
-				sharedData.blockSquare = true;
-				sharedData.blockCross = true;
 				sharedData.blockCircle = true;
+				sharedData.blockCross  = true;
+				sharedData.blockSquare = true;
+				sharedData.blockStart  = true;
+				break;
+			case SCE_CTRL_START:
+				if (sharedData.blockStart || !_isInstalled)
+					break;
+		
+				openApp(sharedData.vpks[sharedData.cursorY]["titleid"].get<string>());
+				sharedData.scene = -1;
+				
+				sharedData.blockCircle = true;
+				sharedData.blockCross  = true;
+				sharedData.blockSquare = true;
+				sharedData.blockStart  = true;
 				break;
 		}
 	}
@@ -104,4 +122,6 @@ void Details::draw(SharedData &sharedData, unsigned int button) {
 void Details::free() {
 	vita2d_free_texture(navbar1);
 	vita2d_free_texture(navbar2);
+	vita2d_free_texture(navbar3);
+	vita2d_free_texture(navbar4);
 }

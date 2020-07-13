@@ -18,4 +18,6 @@ class Details {
 		int cycleCounter = 0;
 		vita2d_texture *navbar1 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/navbar1.png");
 		vita2d_texture *navbar2 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/navbar2.png");
+		vita2d_texture *navbar3 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/navbar3.png");
+		vita2d_texture *navbar4 = vita2d_load_PNG_file("ux0:app/ESVPK0009/resources/navbar4.png");
 };
