@@ -52,6 +52,13 @@ char *bytes_string;
 static CURL *curl_handle = NULL;
 
 
+static void removeIllegalCharactersFromFilename(string& str) {
+	string illegalChars = "\\/:?\"<>|";
+
+	for (char c: illegalChars)
+		str.erase(remove(str.begin(), str.end(), c), str.end());
+}
+
 float format(float len) {
 	while (len > 1024)
 		len /= 1024.0f;
@@ -356,6 +363,7 @@ void Popup::draw(SharedData &sharedData) {
 		case VPK:
 			d_url = sharedData.vpks[sharedData.cursorY]["url"].get<string>().c_str();
 			d_filename = (sharedData.vpks[sharedData.cursorY]["name"].get<string>() + ".vpk").c_str();
+			removeIllegalCharactersFromFilename(d_filename);
 			dl_dir = sharedData.vpkDownloadPath;
 			break;
 		case DATA:
