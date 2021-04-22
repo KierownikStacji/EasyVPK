@@ -8,7 +8,7 @@
 #include "utils/json.hpp"
 
 
-#define PARENT_URL "http://rinnegatamante.it/vitadb/"
+#define PARENT_URL "http://psvita.eu/psvita"
 #define HOMEBREW_URL PARENT_URL "list_hbs_json.php"
 
 #define BLACK   RGBA8(  0,   0,   0, 255)
